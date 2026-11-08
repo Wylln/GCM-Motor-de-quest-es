@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCM SANTANA/AP | Motor de Questões e Neuroeducação (Banca IDCAP)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <span class="brand-badge">Edital 001/2026 • IDCAP</span>
+        <div class="brand-title">GCM SANTANA / AP</div>
+        <div class="brand-subtitle">Guarda Civil Municipal • Nível Médio</div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-view="dashboard" onclick="App.switchView('dashboard')">
+          <span class="nav-icon">⚡</span>
+          <span>Acelerador & Painel</span>
+        </button>
+
+        <button class="nav-btn" data-view="questoes" onclick="App.switchView('questoes')">
+          <span class="nav-icon">🎯</span>
+          <span>Motor de Questões</span>
+        </button>
+
+        <button class="nav-btn" data-view="flashcards" onclick="App.switchView('flashcards')">
+          <span class="nav-icon">🧠</span>
+          <span>Flashcards SM-2</span>
+        </button>
+
+        <button class="nav-btn" data-view="simulado" onclick="App.switchView('simulado')">
+          <span class="nav-icon">⏱️</span>
+          <span>Simulado Oficial IDCAP</span>
+        </button>
+
+        <button class="nav-btn" data-view="biblioteca" onclick="App.switchView('biblioteca')">
+          <span class="nav-icon">📂</span>
+          <span>Materiais em PDF</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div>Banca: <strong>IDCAP Oficial</strong></div>
+        <div>Algoritmo: <strong>SuperMemo-2 (SM-2)</strong></div>
+        <div>Vagas: <strong>Guarda Civil Municipal</strong></div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+
+      <!-- =================================================================
+           VIEW 1: PAINEL NEUROEDUCACIONAL & ACELERADOR SM-2
+           ================================================================= -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">⚡ Acelerador Neuroeducacional GCM Santana</h1>
+            <p class="page-subtitle">Repetição Espaçada (SM-2) + Fila de Prioridade Ponderada por Erros e Pesos da Banca IDCAP</p>
+          </div>
+          <button class="btn btn-emerald" onclick="App.startSmartAcceleratorSession()">
+            🚀 Iniciar Sessão Focada nos Erros
+          </button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card emerald">
+            <div class="kpi-label">Aproveitamento Global</div>
+            <div class="kpi-value" id="kpi-aproveitamento">0%</div>
+            <div class="kpi-sub" id="kpi-acertos-erros">0 acertos • 0 erros</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Questões Resolvidas</div>
+            <div class="kpi-value" id="kpi-questoes-total">0</div>
+            <div class="kpi-sub">Banco Real IDCAP + Gerador</div>
+          </div>
+          <div class="kpi-card rose">
+            <div class="kpi-label">Fila de Revisão Forçada</div>
+            <div class="kpi-value" id="kpi-revisao-urgente">0</div>
+            <div class="kpi-sub">Tópicos com maior taxa de erro</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">Flashcards Consolidados</div>
+            <div class="kpi-value" id="kpi-fc-dominados">0</div>
+            <div class="kpi-sub">Memória de longo prazo ativa</div>
+          </div>
+        </div>
+
+        <div class="accelerator-hero">
+          <div>
+            <h2>🧠 Tutor Neuroeducacional Ativo</h2>
+            <p id="tutor-diagnostic-text">
+              Na prova da <strong>Guarda Civil Municipal de Santana (IDCAP)</strong>, disciplinas como <strong>Legislação da Guarda (Lei 13.022/14 e LC 81/2026)</strong>, <strong>Legislação Especial</strong> e <strong>Direito Penal</strong> possuem Peso 2. Sempre que você errar uma questão, nosso algoritmo reduz o Fator de Facilidade (EF) do tema e força sua repetição imediata!
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="App.startInfiniteGeneratorSession()">
+            ♾️ Bateria Inédita IDCAP
+          </button>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>📊 Domínio por Disciplina do Edital (10 Disciplinas Mapeadas)</span>
+            <span style="font-size:0.8rem; color:var(--text-muted)">Ordenado por prioridade de revisão (Erros × Peso)</span>
+          </div>
+          <div id="dashboard-topics-container"></div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           VIEW 2: MOTOR DE QUESTÕES PADRÃO IDCAP
+           ================================================================= -->
+      <section id="view-questoes" class="view-section">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">🎯 Motor de Questões Padrão IDCAP</h1>
+            <p class="page-subtitle">Justificativa completa de cada alternativa + Referência obrigatória ao PDF, Artigo e Conteúdo</p>
+          </div>
+          <button class="btn btn-emerald" onclick="App.generateNextDynamicQuestion()">
+            ♾️ Gerar Nova Questão Inédita
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="q-filter-mode">Modo de Aprendizagem</label>
+            <select id="q-filter-mode" class="select-input" onchange="App.onQuestionFilterChange()">
+              <option value="adaptativo">⚡ Modo Acelerador Adaptativo (Prioriza Erros)</option>
+              <option value="curadas">📚 Banco Real de Provas Anteriores IDCAP</option>
+              <option value="infinito">♾️ Gerador Infinito Padrão IDCAP</option>
+              <option value="erros">🔥 Caderno de Erros (Apenas as que Errei)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="q-filter-disc">Disciplina</label>
+            <select id="q-filter-disc" class="select-input" onchange="App.onQuestionFilterChange()">
+              <option value="todas">Todas as 10 Disciplinas do Edital</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="question-stage-container"></div>
+      </section>
+
+      <!-- =================================================================
+           VIEW 3: FLASHCARDS ATIVOS (SM-2)
+           ================================================================= -->
+      <section id="view-flashcards" class="view-section">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">🧠 Flashcards Ativos (Active Recall + Anki SM-2)</h1>
+            <p class="page-subtitle">Formule a resposta mentalmente antes de virar. Avalie seu domínio de 1 (Errei) a 4 (Fácil).</p>
+          </div>
+          <button class="btn btn-primary" onclick="App.generateAutoFlashcard()">
+            ➕ Gerar Novo Cartão do Material
+          </button>
+        </div>
+
+        <div id="flashcard-stage-container" class="flashcard-stage"></div>
+      </section>
+
+      <!-- =================================================================
+           VIEW 4: SIMULADO OFICIAL IDCAP
+           ================================================================= -->
+      <section id="view-simulado" class="view-section">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">⏱️ Simulado Oficial GCM Santana (50 Questões)</h1>
+            <p class="page-subtitle">Estrutura oficial com cronômetro de 3h30min e correção detalhada de todas as matérias</p>
+          </div>
+          <button class="btn btn-emerald" onclick="App.startNewSimulado()">
+            🚀 Gerar Novo Simulado de 50 Questões
+          </button>
+        </div>
+
+        <div id="simulado-stage-container"></div>
+      </section>
+
+      <!-- =================================================================
+           VIEW 5: BIBLIOTECA DE ARQUIVOS EM PDF
+           ================================================================= -->
+      <section id="view-biblioteca" class="view-section">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">📂 Biblioteca de Materiais em PDF (ARK/IDCAP)</h1>
+            <p class="page-subtitle">Acesso direto a todas as apostilas e PDFs detalhados que geramos e organizamos para você</p>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <p style="color:var(--text-secondary); margin-bottom:16px;">
+            Todos os materiais de estudo estão salvos na pasta <code>C:\Users\Willian\Desktop\ARK\IDCAP</code>, organizados em 10 pastas temáticas com teoria minuciosa, mapas mentais, mnemônicos e dispositivos legais.
+          </p>
+          <div id="biblioteca-folders-list"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="data/database.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
