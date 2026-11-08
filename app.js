@@ -264,7 +264,9 @@ const App = {
     }
 
     if (pool.length > 0) {
-      this.currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+      const available = pool.filter((q) => !this.currentQuestion || q.id !== this.currentQuestion.id);
+      const candidates = available.length > 0 ? available : pool;
+      this.currentQuestion = candidates[Math.floor(Math.random() * candidates.length)];
     } else {
       this.currentQuestion = this.synthesizeQuestion(discFilter);
     }
@@ -278,15 +280,25 @@ const App = {
       const f = pool.filter((m) => m.disciplinaId === discFilter);
       if (f.length > 0) pool = f;
     }
-    const atom = pool[Math.floor(Math.random() * pool.length)];
+    
+    // Evita repetir exatamente o mesmo átomo se houver múltiplos
+    const candidates = pool.filter(a => !this.currentQuestion || this.currentQuestion.id.indexOf(a.tema.substring(0, 8)) === -1);
+    const atom = (candidates.length > 0 ? candidates : pool)[Math.floor(Math.random() * (candidates.length > 0 ? candidates.length : pool.length))];
     const disc = this.db.disciplinas.find((d) => d.id === atom.disciplinaId) || this.db.disciplinas[0];
 
+    const distractorItems = (atom.distratores || []).slice(0, 4).map((d) => {
+      if (typeof d === 'string') {
+        return { text: d, motivo: null, isCorrect: false };
+      }
+      return { text: d.text, motivo: d.motivo, isCorrect: false };
+    });
+
     const items = [
-      { text: atom.correta, isCorrect: true },
-      ...atom.distratores.slice(0, 4).map((d) => ({ text: d, isCorrect: false }))
+      { text: atom.correta, motivo: null, isCorrect: true },
+      ...distractorItems
     ];
 
-    // Embaralha
+    // Embaralha alternativas A-E
     for (let i = items.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [items[i], items[j]] = [items[j], items[i]];
@@ -302,18 +314,34 @@ const App = {
       alternativas[L] = item.text;
       if (item.isCorrect) {
         gabarito = L;
-        analiseAlternativas[L] = `Correta! Conforme o padrão IDCAP: ${atom.explicacao} (Fonte: ${atom.fonte}).`;
+        analiseAlternativas[L] = `✅ Alternativa CORRETA! Conforme o padrão IDCAP: ${atom.explicacao}\n(Fundamento: ${atom.fonte})`;
       } else {
-        analiseAlternativas[L] = `Incorreta. Pegadinha e distrator clássico da banca IDCAP. A regra exata é: ${atom.explicacao}.`;
+        const motivo = item.motivo ? item.motivo : `Distrator clássico da banca IDCAP. A regra exata é: ${atom.explicacao}`;
+        analiseAlternativas[L] = `❌ Alternativa INCORRETA. ${motivo}`;
       }
     });
+
+    // Formatação complexa do enunciado com base no tipo
+    let enunciado = '';
+    if (atom.tipo === 'CASO_PRATICO' && atom.cenario) {
+      enunciado = `[SITUAÇÃO HIPOTÉTICA OPERACIONAL — BANCA IDCAP]\n${atom.cenario}\n\nConsiderando as normas de ${disc.nome} e o caso concreto narrado, assinale a alternativa CORRETA:`;
+    } else if (atom.tipo === 'ASSERTIVAS_MULTICOMPLEX' && atom.itens) {
+      const itensStr = atom.itens.map((it, idx) => `Item ${['I', 'II', 'III', 'IV'][idx]}: ${it.texto}`).join('\n');
+      enunciado = `[ANÁLISE DE ITENS — PADRÃO IDCAP]\nNo que concerne ao tema "${atom.tema}", avalie a exatidão das afirmativas abaixo:\n\n${itensStr}\n\nAssinale a alternativa correta:`;
+    } else if (atom.tipo === 'EXCECAO_INCORRETA') {
+      enunciado = `[QUESTÃO DE EXCEÇÃO — PADRÃO IDCAP]\nNo tocante ao tema "${atom.tema}", assinale a alternativa que apresenta a afirmação INCORRETA (ou a hipótese juridicamente vedada):`;
+    } else if (atom.tipo === 'CONFRONTO_DOGMATICO') {
+      enunciado = `[CONFRONTO DOGMÁTICO E JURISPRUDENCIAL — BANCA IDCAP]\nNo confronto teórico sobre "${atom.tema}", assinale a alternativa que aplica com exatidão a distinção dos institutos:`;
+    } else {
+      enunciado = `[QUESTÃO SINTETIZADA — BANCA IDCAP]\nNo âmbito do estudo de ${disc.nome}, considerando especificamente o conteúdo sobre "${atom.tema}", assinale a alternativa CORRETA:`;
+    }
 
     return {
       id: `gen_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       disciplinaId: disc.id,
-      dificuldade: 'Média/Difícil',
+      dificuldade: 'Difícil',
       origem: `♾️ Gerador Infinito IDCAP — ${atom.tema}`,
-      enunciado: `[QUESTÃO GERADA — BANCA IDCAP] No âmbito do estudo de ${disc.nome}, considerando especificamente o conteúdo sobre "${atom.tema}", assinale a alternativa CORRETA:`,
+      enunciado,
       alternativas,
       gabarito,
       explicacaoGeral: atom.explicacao,
@@ -321,7 +349,7 @@ const App = {
       referenciaFonte: {
         diplomaLegal: atom.tema,
         secaoMaterial: atom.fonte,
-        detalhe: 'Questão inédita sintetizada com base na matriz doutrinária e legal do concurso.'
+        detalhe: 'Questão inédita sintetizada pelo motor combinatório de alta fidelidade da banca IDCAP.'
       }
     };
   },
